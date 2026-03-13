@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🤟 무음모드 — 지문자 플래시카드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<style>
+:root{
+  --yellow:#FFD600;--yellow-light:#FFFBE6;--yellow-dark:#E6B800;
+  --black:#1a1a1a;--gray:#6b6b6b;--gray-light:#f0f0f0;--white:#ffffff;
+  --green:#00C853;--red:#FF3B30;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#FAFAFA;min-height:100vh;color:var(--black);display:flex;flex-direction:column;}
+
+/* 헤더 */
+.header{background:var(--yellow);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--yellow-dark);position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{font-size:1.7rem;line-height:1;}
+.logo-text{font-family:'Black Han Sans',sans-serif;font-size:1.3rem;color:var(--black);}
+.logo-sub{font-size:0.68rem;color:rgba(0,0,0,0.5);margin-top:1px;}
+
+/* 타이머 */
+.timer-box{display:flex;align-items:center;gap:8px;background:var(--black);border-radius:12px;padding:8px 14px;}
+.timer-display{font-family:'Black Han Sans',sans-serif;font-size:1.3rem;color:var(--yellow);letter-spacing:2px;min-width:68px;text-align:center;}
+.timer-btns{display:flex;gap:5px;}
+.tbtn{border:none;border-radius:8px;padding:5px 11px;font-size:0.72rem;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.15s;}
+.tbtn-start{background:var(--green);color:#fff;}
+.tbtn-start:hover{background:#00a846;}
+.tbtn-stop{background:var(--red);color:#fff;}
+.tbtn-stop:hover{background:#d42f25;}
+.tbtn-reset{background:rgba(255,255,255,0.15);color:#fff;}
+.tbtn-reset:hover{background:rgba(255,255,255,0.28);}
+
+/* 메인 */
+.main{flex:1;padding:1.5rem 1rem 1rem;max-width:600px;margin:0 auto;width:100%;}
+
+/* 점수판 */
+.score-row{display:flex;gap:8px;margin-bottom:1.1rem;}
+.score-card{flex:1;background:var(--white);border:2px solid var(--gray-light);border-radius:14px;padding:10px 8px;text-align:center;}
+.score-num{font-family:'Black Han Sans',sans-serif;font-size:1.5rem;color:var(--black);}
+.score-label{font-size:0.68rem;color:var(--gray);font-weight:700;margin-top:2px;}
+.score-card.best .score-num{color:var(--yellow-dark);}
+
+/* 진행 바 */
+.progress-wrap{margin-bottom:1.2rem;}
+.progress-label{display:flex;justify-content:space-between;font-size:0.73rem;color:var(--gray);margin-bottom:5px;font-weight:700;}
+.progress-bar{height:7px;background:var(--gray-light);border-radius:30px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--yellow-dark));border-radius:30px;transition:width 0.4s ease;}
+
+/* 플래시카드 */
+.card{background:var(--white);border:3px solid var(--yellow);border-radius:28px;padding:2.5rem 2rem 2rem;text-align:center;box-shadow:0 8px 32px rgba(255,214,0,0.13);position:relative;overflow:hidden;min-height:268px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:1.2rem;}
+.card::before{content:'';position:absolute;top:-40px;right:-40px;width:130px;height:130px;background:var(--yellow-light);border-radius:50%;}
+.card::after{content:'';position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;background:var(--yellow-light);border-radius:50%;}
+.card.flip{animation:flip 0.3s ease;}
+@keyframes flip{0%{transform:scale(1);}45%{transform:scale(0.92) rotateY(90deg);}100%{transform:scale(1) rotateY(0deg);}}
+.card-counter{position:absolute;top:18px;right:18px;font-size:0.72rem;color:var(--gray);z-index:2;font-weight:700;}
+.card-word{font-family:'Black Han Sans',sans-serif;font-size:5.5rem;color:var(--black);letter-spacing:0.05em;line-height:1;position:relative;z-index:2;}
+
+/* 힌트 */
+.hint-area{position:relative;z-index:2;background:var(--yellow-light);border:2px dashed var(--yellow-dark);border-radius:14px;padding:14px 16px;margin-top:1rem;width:100%;display:none;animation:fadeUp 0.22s ease;}
+.hint-area.show{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.hint-title{font-size:0.7rem;font-weight:700;color:var(--gray);margin-bottom:8px;letter-spacing:1px;}
+.hint-letters{display:flex;gap:10px;justify-content:center;}
+.hint-char{background:var(--white);border:2px solid var(--yellow);border-radius:12px;padding:10px 14px;text-align:center;min-width:88px;}
+.hint-char-main{font-size:1.8rem;font-weight:900;color:var(--black);}
+.hint-char-parts{font-size:0.82rem;color:var(--gray);margin-top:3px;font-weight:700;}
+.hint-char-label{font-size:0.62rem;color:var(--yellow-dark);font-weight:700;margin-top:2px;}
+
+/* 버튼 */
+.btn-group{display:flex;gap:10px;margin-bottom:0.6rem;}
+.btn{flex:1;padding:16px 10px;border:none;border-radius:16px;font-family:'Noto Sans KR',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-next{background:var(--yellow);color:var(--black);box-shadow:0 4px 16px rgba(255,214,0,0.3);flex:2;font-size:1.05rem;}
+.btn-next:hover{background:var(--yellow-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,214,0,0.42);}
+.btn-next:active{transform:scale(0.97);}
+.btn-hint{background:var(--gray-light);color:var(--black);}
+.btn-hint:hover{background:#e5e5e5;transform:translateY(-2px);}
+.btn-hint.on{background:var(--black);color:var(--yellow);}
+.reshuffle-btn{width:100%;padding:11px;border:2px dashed var(--yellow-dark);border-radius:14px;background:transparent;color:var(--gray);font-size:0.85rem;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.18s;}
+.reshuffle-btn:hover{background:var(--yellow-light);color:var(--black);}
+
+/* 토스트 */
+.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--black);color:var(--yellow);font-size:0.88rem;font-weight:700;padding:10px 22px;border-radius:30px;opacity:0;transition:all 0.28s;pointer-events:none;white-space:nowrap;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* 푸터 */
+.footer{text-align:center;padding:1.1rem;border-top:1px solid var(--gray-light);font-size:0.73rem;color:var(--gray);}
+.footer strong{color:var(--black);}
+
+@media(max-width:480px){
+  .card-word{font-size:4.2rem;}
+  .timer-display{font-size:1.1rem;}
+  .header{padding:0.85rem 1rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🤟</div>
+    <div>
+      <div class="logo-text">무음모드</div>
+      <div class="logo-sub">지문자 플래시카드</div>
+    </div>
+  </div>
+  <div class="timer-box">
+    <div class="timer-display" id="timerDisplay">00:00</div>
+    <div class="timer-btns">
+      <button class="tbtn tbtn-start" id="timerStartBtn" onclick="timerStart()">▶</button>
+      <button class="tbtn tbtn-stop" onclick="timerStop()">⏸</button>
+      <button class="tbtn tbtn-reset" onclick="timerReset()">↺</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="score-row">
+    <div class="score-card">
+      <div class="score-num" id="scoreSeen">0</div>
+      <div class="score-label">본 카드</div>
+    </div>
+    <div class="score-card">
+      <div class="score-num" id="scoreLeft">100</div>
+      <div class="score-label">남은 카드</div>
+    </div>
+    <div class="score-card best">
+      <div class="score-num" id="scoreBest">—</div>
+      <div class="score-label">🏆 최고기록</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="progressText">0 / 100</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="card" id="flashCard">
+    <div class="card-counter" id="cardCounter">1 / 100</div>
+    <div class="card-word" id="cardWord">준비!</div>
+    <div class="hint-area" id="hintArea">
+      <div class="hint-title">🤟 지문자 구성</div>
+      <div class="hint-letters" id="hintLetters"></div>
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-hint" id="hintBtn" onclick="toggleHint()">💡 힌트</button>
+    <button class="btn btn-next" onclick="nextCard()">다음 단어 →</button>
+  </div>
+  <button class="reshuffle-btn" onclick="reshuffleAll()">🔀 전체 다시 섞기</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="footer">
+  "소리 없이도 충분히 시끄러운 우리들 — <strong>무음모드</strong>"
+</div>
+
+<script>
+const WORDS = [
+  // 자연
+  {w:'나무',h:[{c:'나',p:'ㄴ+ㅏ'},{c:'무',p:'ㅁ+ㅜ'}]},
+  {w:'바다',h:[{c:'바',p:'ㅂ+ㅏ'},{c:'다',p:'ㄷ+ㅏ'}]},
+  {w:'하늘',h:[{c:'하',p:'ㅎ+ㅏ'},{c:'늘',p:'ㄴ+ㅡ+ㄹ'}]},
+  {w:'구름',h:[{c:'구',p:'ㄱ+ㅜ'},{c:'름',p:'ㄹ+ㅡ+ㅁ'}]},
+  {w:'바람',h:[{c:'바',p:'ㅂ+ㅏ'},{c:'람',p:'ㄹ+ㅏ+ㅁ'}]},
+  {w:'나비',h:[{c:'나',p:'ㄴ+ㅏ'},{c:'비',p:'ㅂ+ㅣ'}]},
+  {w:'강물',h:[{c:'강',p:'ㄱ+ㅏ+ㅇ'},{c:'물',p:'ㅁ+ㅜ+ㄹ'}]},
+  {w:'산봉',h:[{c:'산',p:'ㅅ+ㅏ+ㄴ'},{c:'봉',p:'ㅂ+ㅗ+ㅇ'}]},
+  {w:'해변',h:[{c:'해',p:'ㅎ+ㅐ'},{c:'변',p:'ㅂ+ㅕ+ㄴ'}]},
+  {w:'눈꽃',h:[{c:'눈',p:'ㄴ+ㅜ+ㄴ'},{c:'꽃',p:'ㄲ+ㅗ+ㅅ'}]},
+  // 감정·신체
+  {w:'마음',h:[{c:'마',p:'ㅁ+ㅏ'},{c:'음',p:'ㅇ+ㅡ+ㅁ'}]},
+  {w:'소리',h:[{c:'소',p:'ㅅ+ㅗ'},{c:'리',p:'ㄹ+ㅣ'}]},
+  {w:'웃음',h:[{c:'웃',p:'ㅇ+ㅜ+ㅅ'},{c:'음',p:'ㅇ+ㅡ+ㅁ'}]},
+  {w:'기쁨',h:[{c:'기',p:'ㄱ+ㅣ'},{c:'쁨',p:'ㅃ+ㅡ+ㅁ'}]},
+  {w:'슬픔',h:[{c:'슬',p:'ㅅ+ㅡ+ㄹ'},{c:'픔',p:'ㅍ+ㅡ+ㅁ'}]},
+  {w:'눈물',h:[{c:'눈',p:'ㄴ+ㅜ+ㄴ'},{c:'물',p:'ㅁ+ㅜ+ㄹ'}]},
+  {w:'손목',h:[{c:'손',p:'ㅅ+ㅗ+ㄴ'},{c:'목',p:'ㅁ+ㅗ+ㄱ'}]},
+  {w:'발목',h:[{c:'발',p:'ㅂ+ㅏ+ㄹ'},{c:'목',p:'ㅁ+ㅗ+ㄱ'}]},
+  {w:'입술',h:[{c:'입',p:'ㅇ+ㅣ+ㅂ'},{c:'술',p:'ㅅ+ㅜ+ㄹ'}]},
+  {w:'어깨',h:[{c:'어',p:'ㅇ+ㅓ'},{c:'깨',p:'ㄲ+ㅐ'}]},
+  // 학교생활
+  {w:'학교',h:[{c:'학',p:'ㅎ+ㅏ+ㄱ'},{c:'교',p:'ㄱ+ㅛ'}]},
+  {w:'친구',h:[{c:'친',p:'ㅊ+ㅣ+ㄴ'},{c:'구',p:'ㄱ+ㅜ'}]},
+  {w:'선생',h:[{c:'선',p:'ㅅ+ㅓ+ㄴ'},{c:'생',p:'ㅅ+ㅐ+ㅇ'}]},
+  {w:'수업',h:[{c:'수',p:'ㅅ+ㅜ'},{c:'업',p:'ㅇ+ㅓ+ㅂ'}]},
+  {w:'숙제',h:[{c:'숙',p:'ㅅ+ㅜ+ㄱ'},{c:'제',p:'ㅈ+ㅔ'}]},
+  {w:'교실',h:[{c:'교',p:'ㄱ+ㅛ'},{c:'실',p:'ㅅ+ㅣ+ㄹ'}]},
+  {w:'공책',h:[{c:'공',p:'ㄱ+ㅗ+ㅇ'},{c:'책',p:'ㅊ+ㅐ+ㄱ'}]},
+  {w:'연필',h:[{c:'연',p:'ㅇ+ㅕ+ㄴ'},{c:'필',p:'ㅍ+ㅣ+ㄹ'}]},
+  {w:'시험',h:[{c:'시',p:'ㅅ+ㅣ'},{c:'험',p:'ㅎ+ㅓ+ㅁ'}]},
+  {w:'도서',h:[{c:'도',p:'ㄷ+ㅗ'},{c:'서',p:'ㅅ+ㅓ'}]},
+  // 음식
+  {w:'우유',h:[{c:'우',p:'ㅇ+ㅜ'},{c:'유',p:'ㅇ+ㅠ'}]},
+  {w:'오이',h:[{c:'오',p:'ㅇ+ㅗ'},{c:'이',p:'ㅇ+ㅣ'}]},
+  {w:'김밥',h:[{c:'김',p:'ㄱ+ㅣ+ㅁ'},{c:'밥',p:'ㅂ+ㅏ+ㅂ'}]},
+  {w:'라면',h:[{c:'라',p:'ㄹ+ㅏ'},{c:'면',p:'ㅁ+ㅕ+ㄴ'}]},
+  {w:'사과',h:[{c:'사',p:'ㅅ+ㅏ'},{c:'과',p:'ㄱ+ㅘ'}]},
+  {w:'포도',h:[{c:'포',p:'ㅍ+ㅗ'},{c:'도',p:'ㄷ+ㅗ'}]},
+  {w:'딸기',h:[{c:'딸',p:'ㄷ+ㅏ+ㄹ'},{c:'기',p:'ㄱ+ㅣ'}]},
+  {w:'수박',h:[{c:'수',p:'ㅅ+ㅜ'},{c:'박',p:'ㅂ+ㅏ+ㄱ'}]},
+  {w:'감자',h:[{c:'감',p:'ㄱ+ㅏ+ㅁ'},{c:'자',p:'ㅈ+ㅏ'}]},
+  {w:'당근',h:[{c:'당',p:'ㄷ+ㅏ+ㅇ'},{c:'근',p:'ㄱ+ㅡ+ㄴ'}]},
+  {w:'양파',h:[{c:'양',p:'ㅇ+ㅏ+ㅇ'},{c:'파',p:'ㅍ+ㅏ'}]},
+  {w:'주스',h:[{c:'주',p:'ㅈ+ㅜ'},{c:'스',p:'ㅅ+ㅡ'}]},
+  {w:'치킨',h:[{c:'치',p:'ㅊ+ㅣ'},{c:'킨',p:'ㅋ+ㅣ+ㄴ'}]},
+  {w:'피자',h:[{c:'피',p:'ㅍ+ㅣ'},{c:'자',p:'ㅈ+ㅏ'}]},
+  {w:'토스',h:[{c:'토',p:'ㅌ+ㅗ'},{c:'스',p:'ㅅ+ㅡ'}]},
+  {w:'버터',h:[{c:'버',p:'ㅂ+ㅓ'},{c:'터',p:'ㅌ+ㅓ'}]},
+  {w:'도넛',h:[{c:'도',p:'ㄷ+ㅗ'},{c:'넛',p:'ㄴ+ㅓ+ㅅ'}]},
+  {w:'케이',h:[{c:'케',p:'ㅋ+ㅔ'},{c:'이',p:'ㅇ+ㅣ'}]},
+  {w:'두부',h:[{c:'두',p:'ㄷ+ㅜ'},{c:'부',p:'ㅂ+ㅜ'}]},
+  {w:'냉면',h:[{c:'냉',p:'ㄴ+ㅐ+ㅇ'},{c:'면',p:'ㅁ+ㅕ+ㄴ'}]},
+  // 동물
+  {w:'사자',h:[{c:'사',p:'ㅅ+ㅏ'},{c:'자',p:'ㅈ+ㅏ'}]},
+  {w:'호랑',h:[{c:'호',p:'ㅎ+ㅗ'},{c:'랑',p:'ㄹ+ㅏ+ㅇ'}]},
+  {w:'토끼',h:[{c:'토',p:'ㅌ+ㅗ'},{c:'끼',p:'ㄲ+ㅣ'}]},
+  {w:'고양',h:[{c:'고',p:'ㄱ+ㅗ'},{c:'양',p:'ㅇ+ㅏ+ㅇ'}]},
+  {w:'판다',h:[{c:'판',p:'ㅍ+ㅏ+ㄴ'},{c:'다',p:'ㄷ+ㅏ'}]},
+  {w:'기린',h:[{c:'기',p:'ㄱ+ㅣ'},{c:'린',p:'ㄹ+ㅣ+ㄴ'}]},
+  {w:'펭귄',h:[{c:'펭',p:'ㅍ+ㅔ+ㅇ'},{c:'귄',p:'ㄱ+ㅱ+ㄴ'}]},
+  {w:'거북',h:[{c:'거',p:'ㄱ+ㅓ'},{c:'북',p:'ㅂ+ㅜ+ㄱ'}]},
+  {w:'돌고',h:[{c:'돌',p:'ㄷ+ㅗ+ㄹ'},{c:'고',p:'ㄱ+ㅗ'}]},
+  {w:'원숭',h:[{c:'원',p:'ㅇ+ㅝ+ㄴ'},{c:'숭',p:'ㅅ+ㅜ+ㅇ'}]},
+  // 장소
+  {w:'공원',h:[{c:'공',p:'ㄱ+ㅗ+ㅇ'},{c:'원',p:'ㅇ+ㅝ+ㄴ'}]},
+  {w:'시장',h:[{c:'시',p:'ㅅ+ㅣ'},{c:'장',p:'ㅈ+ㅏ+ㅇ'}]},
+  {w:'병원',h:[{c:'병',p:'ㅂ+ㅕ+ㅇ'},{c:'원',p:'ㅇ+ㅝ+ㄴ'}]},
+  {w:'도시',h:[{c:'도',p:'ㄷ+ㅗ'},{c:'시',p:'ㅅ+ㅣ'}]},
+  {w:'마을',h:[{c:'마',p:'ㅁ+ㅏ'},{c:'을',p:'ㅇ+ㅡ+ㄹ'}]},
+  {w:'강가',h:[{c:'강',p:'ㄱ+ㅏ+ㅇ'},{c:'가',p:'ㄱ+ㅏ'}]},
+  {w:'항구',h:[{c:'항',p:'ㅎ+ㅏ+ㅇ'},{c:'구',p:'ㄱ+ㅜ'}]},
+  {w:'광장',h:[{c:'광',p:'ㄱ+ㅘ+ㅇ'},{c:'장',p:'ㅈ+ㅏ+ㅇ'}]},
+  {w:'박물',h:[{c:'박',p:'ㅂ+ㅏ+ㄱ'},{c:'물',p:'ㅁ+ㅜ+ㄹ'}]},
+  {w:'극장',h:[{c:'극',p:'ㄱ+ㅡ+ㄱ'},{c:'장',p:'ㅈ+ㅏ+ㅇ'}]},
+  // 사물
+  {w:'모자',h:[{c:'모',p:'ㅁ+ㅗ'},{c:'자',p:'ㅈ+ㅏ'}]},
+  {w:'가방',h:[{c:'가',p:'ㄱ+ㅏ'},{c:'방',p:'ㅂ+ㅏ+ㅇ'}]},
+  {w:'신발',h:[{c:'신',p:'ㅅ+ㅣ+ㄴ'},{c:'발',p:'ㅂ+ㅏ+ㄹ'}]},
+  {w:'시계',h:[{c:'시',p:'ㅅ+ㅣ'},{c:'계',p:'ㄱ+ㅖ'}]},
+  {w:'안경',h:[{c:'안',p:'ㅇ+ㅏ+ㄴ'},{c:'경',p:'ㄱ+ㅕ+ㅇ'}]},
+  {w:'우산',h:[{c:'우',p:'ㅇ+ㅜ'},{c:'산',p:'ㅅ+ㅏ+ㄴ'}]},
+  {w:'지갑',h:[{c:'지',p:'ㅈ+ㅣ'},{c:'갑',p:'ㄱ+ㅏ+ㅂ'}]},
+  {w:'열쇠',h:[{c:'열',p:'ㅇ+ㅕ+ㄹ'},{c:'쇠',p:'ㅅ+ㅚ'}]},
+  {w:'베개',h:[{c:'베',p:'ㅂ+ㅔ'},{c:'개',p:'ㄱ+ㅐ'}]},
+  {w:'이불',h:[{c:'이',p:'ㅇ+ㅣ'},{c:'불',p:'ㅂ+ㅜ+ㄹ'}]},
+  {w:'칫솔',h:[{c:'칫',p:'ㅊ+ㅣ+ㅅ'},{c:'솔',p:'ㅅ+ㅗ+ㄹ'}]},
+  {w:'수건',h:[{c:'수',p:'ㅅ+ㅜ'},{c:'건',p:'ㄱ+ㅓ+ㄴ'}]},
+  // 색깔
+  {w:'빨강',h:[{c:'빨',p:'ㅃ+ㅏ+ㄹ'},{c:'강',p:'ㄱ+ㅏ+ㅇ'}]},
+  {w:'파랑',h:[{c:'파',p:'ㅍ+ㅏ'},{c:'랑',p:'ㄹ+ㅏ+ㅇ'}]},
+  {w:'노랑',h:[{c:'노',p:'ㄴ+ㅗ'},{c:'랑',p:'ㄹ+ㅏ+ㅇ'}]},
+  {w:'초록',h:[{c:'초',p:'ㅊ+ㅗ'},{c:'록',p:'ㄹ+ㅗ+ㄱ'}]},
+  {w:'보라',h:[{c:'보',p:'ㅂ+ㅗ'},{c:'라',p:'ㄹ+ㅏ'}]},
+  {w:'분홍',h:[{c:'분',p:'ㅂ+ㅜ+ㄴ'},{c:'홍',p:'ㅎ+ㅗ+ㅇ'}]},
+  {w:'하양',h:[{c:'하',p:'ㅎ+ㅏ'},{c:'양',p:'ㅇ+ㅏ+ㅇ'}]},
+  {w:'검정',h:[{c:'검',p:'ㄱ+ㅓ+ㅁ'},{c:'정',p:'ㅈ+ㅓ+ㅇ'}]},
+  // 시간
+  {w:'오늘',h:[{c:'오',p:'ㅇ+ㅗ'},{c:'늘',p:'ㄴ+ㅡ+ㄹ'}]},
+  {w:'어제',h:[{c:'어',p:'ㅇ+ㅓ'},{c:'제',p:'ㅈ+ㅔ'}]},
+  {w:'내일',h:[{c:'내',p:'ㄴ+ㅐ'},{c:'일',p:'ㅇ+ㅣ+ㄹ'}]},
+  {w:'아침',h:[{c:'아',p:'ㅇ+ㅏ'},{c:'침',p:'ㅊ+ㅣ+ㅁ'}]},
+  {w:'저녁',h:[{c:'저',p:'ㅈ+ㅓ'},{c:'녁',p:'ㄴ+ㅕ+ㄱ'}]},
+  {w:'봄날',h:[{c:'봄',p:'ㅂ+ㅗ+ㅁ'},{c:'날',p:'ㄴ+ㅏ+ㄹ'}]},
+  {w:'여름',h:[{c:'여',p:'ㅇ+ㅕ'},{c:'름',p:'ㄹ+ㅡ+ㅁ'}]},
+  {w:'가을',h:[{c:'가',p:'ㄱ+ㅏ'},{c:'을',p:'ㅇ+ㅡ+ㄹ'}]},
+  {w:'겨울',h:[{c:'겨',p:'ㄱ+ㅕ'},{c:'울',p:'ㅇ+ㅜ+ㄹ'}]},
+  // 기타
+  {w:'행복',h:[{c:'행',p:'ㅎ+ㅐ+ㅇ'},{c:'복',p:'ㅂ+ㅗ+ㄱ'}]},
+  {w:'노래',h:[{c:'노',p:'ㄴ+ㅗ'},{c:'래',p:'ㄹ+ㅐ'}]},
+  {w:'그림',h:[{c:'그',p:'ㄱ+ㅡ'},{c:'림',p:'ㄹ+ㅣ+ㅁ'}]},
+  {w:'운동',h:[{c:'운',p:'ㅇ+ㅜ+ㄴ'},{c:'동',p:'ㄷ+ㅗ+ㅇ'}]},
+  {w:'여행',h:[{c:'여',p:'ㅇ+ㅕ'},{c:'행',p:'ㅎ+ㅐ+ㅇ'}]},
+  {w:'지문',h:[{c:'지',p:'ㅈ+ㅣ'},{c:'문',p:'ㅁ+ㅜ+ㄴ'}]},
+  {w:'표현',h:[{c:'표',p:'ㅍ+ㅛ'},{c:'현',p:'ㅎ+ㅕ+ㄴ'}]},
+  {w:'꿈꿔',h:[{c:'꿈',p:'ㄲ+ㅜ+ㅁ'},{c:'꿔',p:'ㄲ+ㅝ'}]},
+  {w:'하나',h:[{c:'하',p:'ㅎ+ㅏ'},{c:'나',p:'ㄴ+ㅏ'}]},
+  {w:'사랑',h:[{c:'사',p:'ㅅ+ㅏ'},{c:'랑',p:'ㄹ+ㅏ+ㅇ'}]},
+];
+
+// ── 상태 ─────────────────────────────────────────────
+let deck=[], seen=new Set(), currentIdx=0;
+let hintOn=false, totalSeen=0, bestRecord=null;
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function initDeck(){
+  deck=shuffle([...WORDS]);
+  seen.clear();currentIdx=0;
+}
+
+// ── 타이머 ───────────────────────────────────────────
+let timerSec=0,timerOn=false,timerIv=null;
+function timerStart(){
+  if(timerOn)return;
+  timerOn=true;
+  document.getElementById('timerStartBtn').textContent='⏱';
+  timerIv=setInterval(()=>{timerSec++;updateTimerDisplay();},1000);
+}
+function timerStop(){
+  if(!timerOn)return;
+  timerOn=false;clearInterval(timerIv);
+  document.getElementById('timerStartBtn').textContent='▶';
+  if(seen.size>0&&(bestRecord===null||timerSec<bestRecord)){
+    bestRecord=timerSec;
+    document.getElementById('scoreBest').textContent=fmt(bestRecord);
+    showToast('🏆 최고 기록 갱신!');
+  }
+}
+function timerReset(){
+  timerStop();timerSec=0;updateTimerDisplay();
+  document.getElementById('timerStartBtn').textContent='▶';
+}
+function updateTimerDisplay(){document.getElementById('timerDisplay').textContent=fmt(timerSec);}
+function fmt(s){return`${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;}
+
+// ── 카드 ─────────────────────────────────────────────
+function showCard(item,anim=true){
+  if(!item)return;
+  const card=document.getElementById('flashCard');
+  if(anim){card.classList.remove('flip');void card.offsetWidth;card.classList.add('flip');}
+  document.getElementById('cardWord').textContent=item.w;
+  document.getElementById('cardCounter').textContent=`${currentIdx+1} / ${deck.length}`;
+  hintOn=false;
+  document.getElementById('hintArea').classList.remove('show');
+  const btn=document.getElementById('hintBtn');
+  btn.classList.remove('on');btn.textContent='💡 힌트';
+  const el=document.getElementById('hintLetters');
+  el.innerHTML='';
+  item.h.forEach((h,i)=>{
+    const d=document.createElement('div');d.className='hint-char';
+    d.innerHTML=`<div class="hint-char-main">${h.c}</div><div class="hint-char-parts">${h.p}</div><div class="hint-char-label">${i===0?'첫째 글자':'둘째 글자'}</div>`;
+    el.appendChild(d);
+  });
+}
+
+function nextCard(){
+  seen.add(currentIdx);
+  totalSeen++;
+  document.getElementById('scoreSeen').textContent=totalSeen;
+  const unseen=deck.map((_,i)=>i).filter(i=>!seen.has(i));
+  if(unseen.length>0){
+    currentIdx=unseen[Math.floor(Math.random()*unseen.length)];
+  } else {
+    seen.clear();shuffle(deck);currentIdx=0;
+    showToast('🎉 100개 완주! 처음부터 다시 시작!');
+  }
+  showCard(deck[currentIdx]);
+  updateProgress();
+}
+
+function toggleHint(){
+  hintOn=!hintOn;
+  document.getElementById('hintArea').classList.toggle('show',hintOn);
+  const btn=document.getElementById('hintBtn');
+  btn.classList.toggle('on',hintOn);
+  btn.textContent=hintOn?'🙈 숨기기':'💡 힌트';
+}
+
+function reshuffleAll(){
+  initDeck();totalSeen=0;
+  document.getElementById('scoreSeen').textContent='0';
+  showCard(deck[0],true);
+  updateProgress();
+  showToast('🔀 카드를 다시 섞었어요!');
+}
+
+function updateProgress(){
+  const done=seen.size,total=deck.length;
+  const pct=total>0?Math.round(done/total*100):0;
+  document.getElementById('progressText').textContent=`${done} / ${total}`;
+  document.getElementById('progressPct').textContent=`${pct}%`;
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('scoreLeft').textContent=total-done;
+}
+
+// ── 토스트 ───────────────────────────────────────────
+let toastTm=null;
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  if(toastTm)clearTimeout(toastTm);
+  toastTm=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+initDeck();
+showCard(deck[0],false);
+updateProgress();
+</script>
+</body>
+</html>
