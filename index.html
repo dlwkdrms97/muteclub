@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🤟 무음모드 — 지문자 플래시카드</title>
+<title>🤟 무음모드 — 지문자 플래시카드 (분할화면)</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -27,21 +27,32 @@ body{font-family:'Noto Sans KR',sans-serif;background:#FAFAFA;min-height:100vh;c
 .timer-btns{display:flex;gap:5px;}
 .tbtn{border:none;border-radius:8px;padding:5px 11px;font-size:0.72rem;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.15s;}
 .tbtn-start{background:var(--green);color:#fff;}
-.tbtn-start:hover{background:#00a846;}
 .tbtn-stop{background:var(--red);color:#fff;}
-.tbtn-stop:hover{background:#d42f25;}
 .tbtn-reset{background:rgba(255,255,255,0.15);color:#fff;}
-.tbtn-reset:hover{background:rgba(255,255,255,0.28);}
 
-/* 메인 */
-.main{flex:1;padding:1.5rem 1rem 1rem;max-width:600px;margin:0 auto;width:100%;}
+/* 레이아웃 컨테이너 */
+.main-layout {
+    display: flex;
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    gap: 30px;
+    padding: 2rem 1.5rem;
+}
+
+.left-panel, .right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
 
 /* 점수판 */
 .score-row{display:flex;gap:8px;margin-bottom:1.1rem;}
 .score-card{flex:1;background:var(--white);border:2px solid var(--gray-light);border-radius:14px;padding:10px 8px;text-align:center;}
 .score-num{font-family:'Black Han Sans',sans-serif;font-size:1.5rem;color:var(--black);}
 .score-label{font-size:0.68rem;color:var(--gray);font-weight:700;margin-top:2px;}
-.score-card.best .score-num{color:var(--yellow-dark);}
 
 /* 진행 바 */
 .progress-wrap{margin-bottom:1.2rem;}
@@ -50,49 +61,77 @@ body{font-family:'Noto Sans KR',sans-serif;background:#FAFAFA;min-height:100vh;c
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--yellow-dark));border-radius:30px;transition:width 0.4s ease;}
 
 /* 플래시카드 */
-.card{background:var(--white);border:3px solid var(--yellow);border-radius:28px;padding:2.5rem 2rem 2rem;text-align:center;box-shadow:0 8px 32px rgba(255,214,0,0.13);position:relative;overflow:hidden;min-height:268px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:1.2rem;}
-.card::before{content:'';position:absolute;top:-40px;right:-40px;width:130px;height:130px;background:var(--yellow-light);border-radius:50%;}
-.card::after{content:'';position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;background:var(--yellow-light);border-radius:50%;}
+.card{background:var(--white);border:3px solid var(--yellow);border-radius:28px;padding:2.5rem 2rem 2rem;text-align:center;box-shadow:0 8px 32px rgba(255,214,0,0.13);position:relative;overflow:hidden;min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:1.2rem;}
 .card.flip{animation:flip 0.3s ease;}
 @keyframes flip{0%{transform:scale(1);}45%{transform:scale(0.92) rotateY(90deg);}100%{transform:scale(1) rotateY(0deg);}}
 .card-counter{position:absolute;top:18px;right:18px;font-size:0.72rem;color:var(--gray);z-index:2;font-weight:700;}
-.card-word{font-family:'Black Han Sans',sans-serif;font-size:5.5rem;color:var(--black);letter-spacing:0.05em;line-height:1;position:relative;z-index:2;}
+.card-word{font-family:'Black Han Sans',sans-serif;font-size:6rem;color:var(--black);letter-spacing:0.05em;line-height:1;position:relative;z-index:2;}
 
 /* 힌트 */
-.hint-area{position:relative;z-index:2;background:var(--yellow-light);border:2px dashed var(--yellow-dark);border-radius:14px;padding:14px 16px;margin-top:1rem;width:100%;display:none;animation:fadeUp 0.22s ease;}
-.hint-area.show{display:block;}
+.hint-area{position:relative;z-index:2;background:var(--yellow-light);border:2px dashed var(--yellow-dark);border-radius:14px;padding:14px 16px;margin-top:1rem;width:100%;display:none;}
+.hint-area.show{display:block; animation:fadeUp 0.22s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-.hint-title{font-size:0.7rem;font-weight:700;color:var(--gray);margin-bottom:8px;letter-spacing:1px;}
-.hint-letters{display:flex;gap:10px;justify-content:center;}
-.hint-char{background:var(--white);border:2px solid var(--yellow);border-radius:12px;padding:10px 14px;text-align:center;min-width:88px;}
-.hint-char-main{font-size:1.8rem;font-weight:900;color:var(--black);}
-.hint-char-parts{font-size:0.82rem;color:var(--gray);margin-top:3px;font-weight:700;}
-.hint-char-label{font-size:0.62rem;color:var(--yellow-dark);font-weight:700;margin-top:2px;}
+.hint-title{font-size:0.7rem;font-weight:700;color:var(--gray);margin-bottom:8px;}
+.hint-letters{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.hint-char{background:var(--white);border:2px solid var(--yellow);border-radius:12px;padding:10px 14px;text-align:center;min-width:80px;}
+.hint-char-main{font-size:1.5rem;font-weight:900;color:var(--black);}
+.hint-char-parts{font-size:0.75rem;color:var(--gray);margin-top:3px;font-weight:700;}
+.hint-char-label{font-size:0.6rem;color:var(--yellow-dark);font-weight:700;margin-top:2px;}
+
+/* 웹캠 거울 영역 */
+.cam-container {
+  width: 100%; height: 100%; min-height: 400px; background: #000; border-radius: 28px; 
+  overflow: hidden; position: relative;
+  border: 4px solid var(--yellow);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  display: flex; align-items: center; justify-content: center;
+}
+.cam-placeholder {
+    color: #444; text-align: center; display: flex; flex-direction: column; gap: 10px;
+}
+.cam-placeholder span { font-size: 3rem; }
+video {
+  width: 100%; height: 100%; object-fit: cover;
+  transform: scaleX(-1); 
+  display: none;
+}
+video.active { display: block; }
+.cam-overlay-text {
+  position: absolute; bottom: 20px; right: 25px;
+  color: rgba(255,255,255,0.7); font-size: 0.9rem; font-weight: 700;
+  z-index: 10;
+}
 
 /* 버튼 */
-.btn-group{display:flex;gap:10px;margin-bottom:0.6rem;}
-.btn{flex:1;padding:16px 10px;border:none;border-radius:16px;font-family:'Noto Sans KR',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px;}
-.btn-next{background:var(--yellow);color:var(--black);box-shadow:0 4px 16px rgba(255,214,0,0.3);flex:2;font-size:1.05rem;}
-.btn-next:hover{background:var(--yellow-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,214,0,0.42);}
-.btn-next:active{transform:scale(0.97);}
+.btn-group{display:flex;gap:10px;margin-bottom:1rem;}
+.btn{flex:1;padding:18px 10px;border:none;border-radius:16px;font-size:1.1rem;font-weight:700;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-next{background:var(--yellow);color:var(--black);flex:2; box-shadow: 0 4px 15px rgba(255,214,0,0.3);}
+.btn-next:hover{background:var(--yellow-dark);transform:translateY(-2px);}
 .btn-hint{background:var(--gray-light);color:var(--black);}
-.btn-hint:hover{background:#e5e5e5;transform:translateY(-2px);}
 .btn-hint.on{background:var(--black);color:var(--yellow);}
-.reshuffle-btn{width:100%;padding:11px;border:2px dashed var(--yellow-dark);border-radius:14px;background:transparent;color:var(--gray);font-size:0.85rem;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.18s;}
-.reshuffle-btn:hover{background:var(--yellow-light);color:var(--black);}
+
+.btn-cam-toggle {
+  width: 100%; padding: 18px; margin-bottom: 1.5rem;
+  background: var(--white); border: 3px solid var(--yellow);
+  border-radius: 16px; font-weight: 900; color: var(--black);
+  cursor: pointer; transition: all 0.2s; display: flex; justify-content: center; gap: 10px; align-items: center;
+  font-size: 1.1rem;
+}
+.btn-cam-toggle:hover { background: var(--yellow-light); }
+.btn-cam-toggle.on { background: var(--red); color: white; border-color: var(--red); }
+
+.reshuffle-btn{width:100%;padding:13px;border:2px dashed var(--gray);border-radius:14px;background:transparent;color:var(--gray);font-size:0.9rem;font-weight:700;cursor:pointer; font-family: inherit;}
 
 /* 토스트 */
-.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--black);color:var(--yellow);font-size:0.88rem;font-weight:700;padding:10px 22px;border-radius:30px;opacity:0;transition:all 0.28s;pointer-events:none;white-space:nowrap;z-index:999;}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--black);color:var(--yellow);font-size:0.9rem;font-weight:700;padding:12px 26px;border-radius:30px;opacity:0;transition:all 0.28s;pointer-events:none;z-index:999;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* 푸터 */
-.footer{text-align:center;padding:1.1rem;border-top:1px solid var(--gray-light);font-size:0.73rem;color:var(--gray);}
-.footer strong{color:var(--black);}
-
+@media(max-width:900px){
+    .main-layout { flex-direction: column; padding: 1rem; }
+    .cam-container { min-height: 300px; }
+}
 @media(max-width:480px){
-  .card-word{font-size:4.2rem;}
-  .timer-display{font-size:1.1rem;}
-  .header{padding:0.85rem 1rem;}
+  .card-word{font-size:4.5rem;}
 }
 </style>
 </head>
@@ -116,55 +155,69 @@ body{font-family:'Noto Sans KR',sans-serif;background:#FAFAFA;min-height:100vh;c
   </div>
 </div>
 
-<div class="main">
-  <div class="score-row">
-    <div class="score-card">
-      <div class="score-num" id="scoreSeen">0</div>
-      <div class="score-label">본 카드</div>
+<div class="main-layout">
+  <!-- 왼쪽 패널: 플래시카드 및 정보 -->
+  <div class="left-panel">
+    <div class="score-row">
+      <div class="score-card">
+        <div class="score-num" id="scoreSeen">0</div>
+        <div class="score-label">본 카드</div>
+      </div>
+      <div class="score-card">
+        <div class="score-num" id="scoreLeft">100</div>
+        <div class="score-label">남은 카드</div>
+      </div>
+      <div class="score-card best">
+        <div class="score-num" id="scoreBest">—</div>
+        <div class="score-label">🏆 최고기록</div>
+      </div>
     </div>
-    <div class="score-card">
-      <div class="score-num" id="scoreLeft">100</div>
-      <div class="score-label">남은 카드</div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="progressText">0 / 100</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     </div>
-    <div class="score-card best">
-      <div class="score-num" id="scoreBest">—</div>
-      <div class="score-label">🏆 최고기록</div>
+
+    <div class="card" id="flashCard">
+      <div class="card-counter" id="cardCounter">1 / 100</div>
+      <div class="card-word" id="cardWord">준비!</div>
+      <div class="hint-area" id="hintArea">
+        <div class="hint-title">🤟 지문자 구성</div>
+        <div class="hint-letters" id="hintLetters"></div>
+      </div>
     </div>
+
+    <div class="btn-group">
+      <button class="btn btn-hint" id="hintBtn" onclick="toggleHint()">💡 힌트</button>
+      <button class="btn btn-next" onclick="nextCard()">다음 단어 →</button>
+    </div>
+    <button class="reshuffle-btn" onclick="reshuffleAll()">🔀 전체 다시 섞기</button>
   </div>
 
-  <div class="progress-wrap">
-    <div class="progress-label">
-      <span id="progressText">0 / 100</span>
-      <span id="progressPct">0%</span>
-    </div>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-  </div>
+  <!-- 오른쪽 패널: 웹캠 거울 -->
+  <div class="right-panel">
+    <button class="btn-cam-toggle" id="camToggleBtn" onclick="toggleCamera()">
+      📷 지문자 거울(내 손 보기) 켜기
+    </button>
 
-  <div class="card" id="flashCard">
-    <div class="card-counter" id="cardCounter">1 / 100</div>
-    <div class="card-word" id="cardWord">준비!</div>
-    <div class="hint-area" id="hintArea">
-      <div class="hint-title">🤟 지문자 구성</div>
-      <div class="hint-letters" id="hintLetters"></div>
+    <div class="cam-container" id="camContainer">
+      <div class="cam-placeholder" id="camPlaceholder">
+          <span>📷</span>
+          <p>거울을 켜면 내 손 모양을<br>확인하며 연습할 수 있습니다.</p>
+      </div>
+      <video id="webcam" autoplay playsinline muted></video>
+      <div class="cam-overlay-text">거울 모드 🪞</div>
     </div>
   </div>
-
-  <div class="btn-group">
-    <button class="btn btn-hint" id="hintBtn" onclick="toggleHint()">💡 힌트</button>
-    <button class="btn btn-next" onclick="nextCard()">다음 단어 →</button>
-  </div>
-  <button class="reshuffle-btn" onclick="reshuffleAll()">🔀 전체 다시 섞기</button>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<div class="footer">
-  "소리 없이도 충분히 시끄러운 우리들 — <strong>무음모드</strong>"
-</div>
-
 <script>
 const WORDS = [
-  // 자연
   {w:'나무',h:[{c:'나',p:'ㄴ+ㅏ'},{c:'무',p:'ㅁ+ㅜ'}]},
   {w:'바다',h:[{c:'바',p:'ㅂ+ㅏ'},{c:'다',p:'ㄷ+ㅏ'}]},
   {w:'하늘',h:[{c:'하',p:'ㅎ+ㅏ'},{c:'늘',p:'ㄴ+ㅡ+ㄹ'}]},
@@ -175,7 +228,6 @@ const WORDS = [
   {w:'산봉',h:[{c:'산',p:'ㅅ+ㅏ+ㄴ'},{c:'봉',p:'ㅂ+ㅗ+ㅇ'}]},
   {w:'해변',h:[{c:'해',p:'ㅎ+ㅐ'},{c:'변',p:'ㅂ+ㅕ+ㄴ'}]},
   {w:'눈꽃',h:[{c:'눈',p:'ㄴ+ㅜ+ㄴ'},{c:'꽃',p:'ㄲ+ㅗ+ㅅ'}]},
-  // 감정·신체
   {w:'마음',h:[{c:'마',p:'ㅁ+ㅏ'},{c:'음',p:'ㅇ+ㅡ+ㅁ'}]},
   {w:'소리',h:[{c:'소',p:'ㅅ+ㅗ'},{c:'리',p:'ㄹ+ㅣ'}]},
   {w:'웃음',h:[{c:'웃',p:'ㅇ+ㅜ+ㅅ'},{c:'음',p:'ㅇ+ㅡ+ㅁ'}]},
@@ -186,7 +238,6 @@ const WORDS = [
   {w:'발목',h:[{c:'발',p:'ㅂ+ㅏ+ㄹ'},{c:'목',p:'ㅁ+ㅗ+ㄱ'}]},
   {w:'입술',h:[{c:'입',p:'ㅇ+ㅣ+ㅂ'},{c:'술',p:'ㅅ+ㅜ+ㄹ'}]},
   {w:'어깨',h:[{c:'어',p:'ㅇ+ㅓ'},{c:'깨',p:'ㄲ+ㅐ'}]},
-  // 학교생활
   {w:'학교',h:[{c:'학',p:'ㅎ+ㅏ+ㄱ'},{c:'교',p:'ㄱ+ㅛ'}]},
   {w:'친구',h:[{c:'친',p:'ㅊ+ㅣ+ㄴ'},{c:'구',p:'ㄱ+ㅜ'}]},
   {w:'선생',h:[{c:'선',p:'ㅅ+ㅓ+ㄴ'},{c:'생',p:'ㅅ+ㅐ+ㅇ'}]},
@@ -197,7 +248,6 @@ const WORDS = [
   {w:'연필',h:[{c:'연',p:'ㅇ+ㅕ+ㄴ'},{c:'필',p:'ㅍ+ㅣ+ㄹ'}]},
   {w:'시험',h:[{c:'시',p:'ㅅ+ㅣ'},{c:'험',p:'ㅎ+ㅓ+ㅁ'}]},
   {w:'도서',h:[{c:'도',p:'ㄷ+ㅗ'},{c:'서',p:'ㅅ+ㅓ'}]},
-  // 음식
   {w:'우유',h:[{c:'우',p:'ㅇ+ㅜ'},{c:'유',p:'ㅇ+ㅠ'}]},
   {w:'오이',h:[{c:'오',p:'ㅇ+ㅗ'},{c:'이',p:'ㅇ+ㅣ'}]},
   {w:'김밥',h:[{c:'김',p:'ㄱ+ㅣ+ㅁ'},{c:'밥',p:'ㅂ+ㅏ+ㅂ'}]},
@@ -218,7 +268,6 @@ const WORDS = [
   {w:'케이',h:[{c:'케',p:'ㅋ+ㅔ'},{c:'이',p:'ㅇ+ㅣ'}]},
   {w:'두부',h:[{c:'두',p:'ㄷ+ㅜ'},{c:'부',p:'ㅂ+ㅜ'}]},
   {w:'냉면',h:[{c:'냉',p:'ㄴ+ㅐ+ㅇ'},{c:'면',p:'ㅁ+ㅕ+ㄴ'}]},
-  // 동물
   {w:'사자',h:[{c:'사',p:'ㅅ+ㅏ'},{c:'자',p:'ㅈ+ㅏ'}]},
   {w:'호랑',h:[{c:'호',p:'ㅎ+ㅗ'},{c:'랑',p:'ㄹ+ㅏ+ㅇ'}]},
   {w:'토끼',h:[{c:'토',p:'ㅌ+ㅗ'},{c:'끼',p:'ㄲ+ㅣ'}]},
@@ -229,7 +278,6 @@ const WORDS = [
   {w:'거북',h:[{c:'거',p:'ㄱ+ㅓ'},{c:'북',p:'ㅂ+ㅜ+ㄱ'}]},
   {w:'돌고',h:[{c:'돌',p:'ㄷ+ㅗ+ㄹ'},{c:'고',p:'ㄱ+ㅗ'}]},
   {w:'원숭',h:[{c:'원',p:'ㅇ+ㅝ+ㄴ'},{c:'숭',p:'ㅅ+ㅜ+ㅇ'}]},
-  // 장소
   {w:'공원',h:[{c:'공',p:'ㄱ+ㅗ+ㅇ'},{c:'원',p:'ㅇ+ㅝ+ㄴ'}]},
   {w:'시장',h:[{c:'시',p:'ㅅ+ㅣ'},{c:'장',p:'ㅈ+ㅏ+ㅇ'}]},
   {w:'병원',h:[{c:'병',p:'ㅂ+ㅕ+ㅇ'},{c:'원',p:'ㅇ+ㅝ+ㄴ'}]},
@@ -240,7 +288,6 @@ const WORDS = [
   {w:'광장',h:[{c:'광',p:'ㄱ+ㅘ+ㅇ'},{c:'장',p:'ㅈ+ㅏ+ㅇ'}]},
   {w:'박물',h:[{c:'박',p:'ㅂ+ㅏ+ㄱ'},{c:'물',p:'ㅁ+ㅜ+ㄹ'}]},
   {w:'극장',h:[{c:'극',p:'ㄱ+ㅡ+ㄱ'},{c:'장',p:'ㅈ+ㅏ+ㅇ'}]},
-  // 사물
   {w:'모자',h:[{c:'모',p:'ㅁ+ㅗ'},{c:'자',p:'ㅈ+ㅏ'}]},
   {w:'가방',h:[{c:'가',p:'ㄱ+ㅏ'},{c:'방',p:'ㅂ+ㅏ+ㅇ'}]},
   {w:'신발',h:[{c:'신',p:'ㅅ+ㅣ+ㄴ'},{c:'발',p:'ㅂ+ㅏ+ㄹ'}]},
@@ -253,7 +300,6 @@ const WORDS = [
   {w:'이불',h:[{c:'이',p:'ㅇ+ㅣ'},{c:'불',p:'ㅂ+ㅜ+ㄹ'}]},
   {w:'칫솔',h:[{c:'칫',p:'ㅊ+ㅣ+ㅅ'},{c:'솔',p:'ㅅ+ㅗ+ㄹ'}]},
   {w:'수건',h:[{c:'수',p:'ㅅ+ㅜ'},{c:'건',p:'ㄱ+ㅓ+ㄴ'}]},
-  // 색깔
   {w:'빨강',h:[{c:'빨',p:'ㅃ+ㅏ+ㄹ'},{c:'강',p:'ㄱ+ㅏ+ㅇ'}]},
   {w:'파랑',h:[{c:'파',p:'ㅍ+ㅏ'},{c:'랑',p:'ㄹ+ㅏ+ㅇ'}]},
   {w:'노랑',h:[{c:'노',p:'ㄴ+ㅗ'},{c:'랑',p:'ㄹ+ㅏ+ㅇ'}]},
@@ -262,7 +308,6 @@ const WORDS = [
   {w:'분홍',h:[{c:'분',p:'ㅂ+ㅜ+ㄴ'},{c:'홍',p:'ㅎ+ㅗ+ㅇ'}]},
   {w:'하양',h:[{c:'하',p:'ㅎ+ㅏ'},{c:'양',p:'ㅇ+ㅏ+ㅇ'}]},
   {w:'검정',h:[{c:'검',p:'ㄱ+ㅓ+ㅁ'},{c:'정',p:'ㅈ+ㅓ+ㅇ'}]},
-  // 시간
   {w:'오늘',h:[{c:'오',p:'ㅇ+ㅗ'},{c:'늘',p:'ㄴ+ㅡ+ㄹ'}]},
   {w:'어제',h:[{c:'어',p:'ㅇ+ㅓ'},{c:'제',p:'ㅈ+ㅔ'}]},
   {w:'내일',h:[{c:'내',p:'ㄴ+ㅐ'},{c:'일',p:'ㅇ+ㅣ+ㄹ'}]},
@@ -272,8 +317,7 @@ const WORDS = [
   {w:'여름',h:[{c:'여',p:'ㅇ+ㅕ'},{c:'름',p:'ㄹ+ㅡ+ㅁ'}]},
   {w:'가을',h:[{c:'가',p:'ㄱ+ㅏ'},{c:'을',p:'ㅇ+ㅡ+ㄹ'}]},
   {w:'겨울',h:[{c:'겨',p:'ㄱ+ㅕ'},{c:'울',p:'ㅇ+ㅜ+ㄹ'}]},
-  // 기타
-  {w:'행복',h:[{c:'행',p:'ㅎ+ㅐ+ㅇ'},{c:'복',p:'ㅂ+ㅗ+ㄱ'}]},
+  {w:'행복',h:[{c:'행',p:'ㅎ+ㅐ+ㅇ'},{c:'복',p:'ㅂ+ㅗ+ㅇ'}]},
   {w:'노래',h:[{c:'노',p:'ㄴ+ㅗ'},{c:'래',p:'ㄹ+ㅐ'}]},
   {w:'그림',h:[{c:'그',p:'ㄱ+ㅡ'},{c:'림',p:'ㄹ+ㅣ+ㅁ'}]},
   {w:'운동',h:[{c:'운',p:'ㅇ+ㅜ+ㄴ'},{c:'동',p:'ㄷ+ㅗ+ㅇ'}]},
@@ -285,7 +329,6 @@ const WORDS = [
   {w:'사랑',h:[{c:'사',p:'ㅅ+ㅏ'},{c:'랑',p:'ㄹ+ㅏ+ㅇ'}]},
 ];
 
-// ── 상태 ─────────────────────────────────────────────
 let deck=[], seen=new Set(), currentIdx=0;
 let hintOn=false, totalSeen=0, bestRecord=null;
 
@@ -297,11 +340,44 @@ function shuffle(arr){
   return arr;
 }
 function initDeck(){
-  deck=shuffle([...WORDS]);
-  seen.clear();currentIdx=0;
+  deck=shuffle([...WORDS]); seen.clear(); currentIdx=0;
 }
 
-// ── 타이머 ───────────────────────────────────────────
+let camStream = null;
+let isCamOn = false;
+
+async function toggleCamera() {
+  const video = document.getElementById('webcam');
+  const container = document.getElementById('camContainer');
+  const placeholder = document.getElementById('camPlaceholder');
+  const btn = document.getElementById('camToggleBtn');
+
+  if (isCamOn) {
+    if (camStream) {
+      camStream.getTracks().forEach(track => track.stop());
+    }
+    video.srcObject = null;
+    video.classList.remove('active');
+    placeholder.style.display = 'flex';
+    btn.classList.remove('on');
+    btn.innerHTML = '📷 지문자 거울(내 손 보기) 켜기';
+    isCamOn = false;
+  } else {
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      video.srcObject = camStream;
+      video.classList.add('active');
+      placeholder.style.display = 'none';
+      btn.classList.add('on');
+      btn.innerHTML = '🛑 거울 끄기';
+      isCamOn = true;
+    } catch (err) {
+      alert('카메라 권한이 없거나 카메라를 찾을 수 없습니다.');
+      console.error(err);
+    }
+  }
+}
+
 let timerSec=0,timerOn=false,timerIv=null;
 function timerStart(){
   if(timerOn)return;
@@ -313,20 +389,13 @@ function timerStop(){
   if(!timerOn)return;
   timerOn=false;clearInterval(timerIv);
   document.getElementById('timerStartBtn').textContent='▶';
-  if(seen.size>0&&(bestRecord===null||timerSec<bestRecord)){
-    bestRecord=timerSec;
-    document.getElementById('scoreBest').textContent=fmt(bestRecord);
-    showToast('🏆 최고 기록 갱신!');
-  }
 }
 function timerReset(){
   timerStop();timerSec=0;updateTimerDisplay();
-  document.getElementById('timerStartBtn').textContent='▶';
 }
 function updateTimerDisplay(){document.getElementById('timerDisplay').textContent=fmt(timerSec);}
 function fmt(s){return`${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;}
 
-// ── 카드 ─────────────────────────────────────────────
 function showCard(item,anim=true){
   if(!item)return;
   const card=document.getElementById('flashCard');
@@ -335,27 +404,25 @@ function showCard(item,anim=true){
   document.getElementById('cardCounter').textContent=`${currentIdx+1} / ${deck.length}`;
   hintOn=false;
   document.getElementById('hintArea').classList.remove('show');
-  const btn=document.getElementById('hintBtn');
-  btn.classList.remove('on');btn.textContent='💡 힌트';
+  document.getElementById('hintBtn').classList.remove('on');
+  document.getElementById('hintBtn').textContent='💡 힌트';
+  
   const el=document.getElementById('hintLetters');
   el.innerHTML='';
   item.h.forEach((h,i)=>{
-    const d=document.createElement('div');d.className='hint-char';
-    d.innerHTML=`<div class="hint-char-main">${h.c}</div><div class="hint-char-parts">${h.p}</div><div class="hint-char-label">${i===0?'첫째 글자':'둘째 글자'}</div>`;
-    el.appendChild(d);
+    el.innerHTML += `<div class="hint-char"><div class="hint-char-main">${h.c}</div><div class="hint-char-parts">${h.p}</div><div class="hint-char-label">${i===0?'첫째 글자':'둘째 글자'}</div></div>`;
   });
 }
 
 function nextCard(){
-  seen.add(currentIdx);
-  totalSeen++;
+  seen.add(currentIdx); totalSeen++;
   document.getElementById('scoreSeen').textContent=totalSeen;
   const unseen=deck.map((_,i)=>i).filter(i=>!seen.has(i));
   if(unseen.length>0){
     currentIdx=unseen[Math.floor(Math.random()*unseen.length)];
   } else {
     seen.clear();shuffle(deck);currentIdx=0;
-    showToast('🎉 100개 완주! 처음부터 다시 시작!');
+    showToast('🎉 100개 완주!');
   }
   showCard(deck[currentIdx]);
   updateProgress();
@@ -372,8 +439,7 @@ function toggleHint(){
 function reshuffleAll(){
   initDeck();totalSeen=0;
   document.getElementById('scoreSeen').textContent='0';
-  showCard(deck[0],true);
-  updateProgress();
+  showCard(deck[0],true); updateProgress();
   showToast('🔀 카드를 다시 섞었어요!');
 }
 
@@ -386,7 +452,6 @@ function updateProgress(){
   document.getElementById('scoreLeft').textContent=total-done;
 }
 
-// ── 토스트 ───────────────────────────────────────────
 let toastTm=null;
 function showToast(msg){
   const el=document.getElementById('toast');
